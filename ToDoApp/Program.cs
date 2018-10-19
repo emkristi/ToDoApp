@@ -20,7 +20,7 @@ namespace ToDoApp
 
     public class ToDoList
     {
-
+        // Method for updating the list by reading from File and adding to list
         public void UpdateList(List<Task> list, string filename)
         {
             string line;
@@ -35,6 +35,7 @@ namespace ToDoApp
             sr.Close();
         }
 
+        // Writes the list into a text file as strings
         public void WriteListToFile(List<Task> list, string filename)
         {
             string toFile;
@@ -49,6 +50,7 @@ namespace ToDoApp
 
         }
 
+        // Reads from file. File is used to save state. 
         public void PrintListFromFile(string filename)
         {
             StreamReader sr = new StreamReader(filename);
@@ -62,7 +64,7 @@ namespace ToDoApp
             sr.Close();
         }
 
-        // Method for removing task that is done given the ID
+        // Method for removing task that is done given the ID.
         public void DoTask(List<Task> list, string input)
         {
             string findTaskId = input.Remove(0, input.IndexOf('#') + 1);
@@ -77,6 +79,7 @@ namespace ToDoApp
             }
         }
 
+        // Method that assigns an ID, used for adding a new task
         public int AssignId(List<Task> list)
         {
             int id = 1;
@@ -93,36 +96,47 @@ namespace ToDoApp
             return id;
         }
 
+        // Method that checks the rest of the string after the word Add. Returns the task written.
+        // Used for adding a new task
+        public string CheckAddString(string input){
+            string taskRead = input;
+            if (taskRead.Contains("\"")){
+                Match match = Regex.Match(taskRead, "\"([^\"]*)\"");
+                if (match.Success){
+                    taskRead = match.Groups[1].Value;
+                }
+            }else{
+                taskRead = input.Substring(input.IndexOf(' ') + 1);
+            }
+            return taskRead;
+        }
+
+
+
         public static void Main(string[] args)
         {
+            Console.WriteLine("Choose command: Add \"example task\" or Add example task | Do #tasknumber | Print ");
+
             string filename = @"/Users/eline/Projects/ToDoApp/ToDoApp/TextFile.txt";
             List<Task> list = new List<Task>();
             ToDoList thelist = new ToDoList();
 
             thelist.UpdateList(list, filename);
 
-            Console.WriteLine("Choose command: Add \"example task\" | Do #tasknumber | Print ");
 
             while (true)
             {
                 string input = Console.ReadLine();
-                string verb = "";
+                string commandVerb = "";
 
                 if (input.Contains(" "))
                 {
-                    verb = input.Substring(0, input.IndexOf(' '));
+                    commandVerb = input.Substring(0, input.IndexOf(' '));
                 }
 
-                if (verb == "Add")
+                if (commandVerb == "Add")
                 {
-
-                    string taskRead = input;
-                    Match match = Regex.Match(taskRead, "\"([^\"]*)\"");
-                    if (match.Success)
-                    {
-                        taskRead = match.Groups[1].Value;
-                    }
-
+                    string taskRead = thelist.CheckAddString(input);
                     int taskid = thelist.AssignId(list);
                     list.Add(new Task(taskRead, taskid));
                     thelist.WriteListToFile(list, filename);
@@ -130,7 +144,7 @@ namespace ToDoApp
                     Console.WriteLine("#" + taskid + " " + taskRead);
 
                 }
-                else if (verb == "Do")
+                else if (commandVerb == "Do")
                 {
                     thelist.DoTask(list, input);
                     thelist.WriteListToFile(list, filename);
@@ -139,6 +153,8 @@ namespace ToDoApp
                 else if (input == "Print")
                 {
                     thelist.PrintListFromFile(filename);
+                }else{
+                    Console.WriteLine("No such command.");
                 }
             }
         }
